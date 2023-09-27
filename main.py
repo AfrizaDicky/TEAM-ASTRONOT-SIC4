@@ -14,6 +14,8 @@ mq_out_dpin = 16
 mq_out_apin = 1
 relay_in = 21
 relay_out = 20
+led_red = 19
+led_green = 13
 
 
 '''Memasukan variable dan token ubidots'''
@@ -42,6 +44,8 @@ def init():
          GPIO.setup(mq_out_dpin,GPIO.IN,pull_up_down=GPIO.PUD_DOWN)
          GPIO.setup(relay_in, GPIO.OUT)
          GPIO.setup(relay_out, GPIO.OUT)
+         GPIO.setup(led_green, GPIO.OUT)
+         GPIO.setup(led_red, GPIO.OUT)
 
 '''read SPI data from MCP3008(or MCP3204) chip,8 possible adc's (0 thru 7)'''
 def readadc(adcnum, clockpin, mosipin, misopin, cspin):
@@ -122,9 +126,6 @@ def utama():
         time.sleep(2)
         COlevel=readadc(mq_in_apin, SPICLK, SPIMOSI, SPIMISO, SPICS)
         O2level = readadc_in(mq_out_apin, SPICLK, SPIMOSI, SPIMISO, SPICS)
-        print(COlevel)
-        print(O2level)
-        print(GPIO.input(mq_in_dpin))
         persentase_co2 = round((COlevel/2047.)*100)
         persentase_o2 = round((O2level/4095.)*100)
         kadar_co2 = ((COlevel/2047.)*5)
@@ -137,13 +138,17 @@ def utama():
 def relay_udara_masuk():
     persentase_co2,kadar_co2,persentase_o2,kadar_o2 = utama()
     
-    if persentase_co2 >= 50:
-        GPIO.output(relay_in, False)
+    if persentase_co2 >=40:
+        GPIO.output(relay_in, True)
+         GPIO.output(led_green, True)
+         GPIO.output(led_red, False)
         nilai_pompa_masuk = 1
         time.sleep(2)
         print("relay hidup")
     else:
-        GPIO.output(relay_in, True)
+        GPIO.output(relay_in, False)
+         GPIO.output(led_red, True)
+         GPIO.output(led_green, False)
         print("relay mati")
         nilai_pompa_masuk = 0
         
@@ -153,14 +158,14 @@ def relay_udara_masuk():
 def relay_udara_keluar():
     persentase_co2,kadar_co2,persentase_o2,kadar_o2 = utama()
     
-    if persentase_o2 <= 50:
-        GPIO.output(relay_out, False)
+    if persentase_o2 <= 10:
+        GPIO.output(relay_out, True)
         nilai_pompa_keluar = 1
         print("relay hidup keluar")
         time.sleep(2)
             
     else:
-        GPIO.output(relay_out, True)
+        GPIO.output(relay_out, False)
         nilai_pompa_keluar = 0
         print("relay mati")
             
