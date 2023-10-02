@@ -88,8 +88,6 @@ def readadc(adcnum, clockpin, mosipin, misopin, cspin):
         
         adcout >>= 1       # first bit is 'null' so drop it
         return adcout
-def 
-
 
 '''Fungsi utama'''
 def utama():
